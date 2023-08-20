@@ -1,7 +1,23 @@
 class Telebook:
-    def __init__(self):
+    def __init__(self, filename):
         self.records = []
-        self.id_record = 1
+        self.id_record = self.load_current_id()
+        self.filename = filename
+
+    def load_current_id(self):
+        try:
+            with open("current_id.txt", "r") as file:
+                content = file.readline().strip()
+                if content:
+                    return int(content)
+                else:
+                    return 1
+        except FileNotFoundError:
+            return 1
+
+    def update_current_id(self):
+        with open("current_id.txt", "w") as file:
+            file.write(str(self.id_record))
 
     def add_record(self, surname: str, name: str, father_name: str, corporation: str, telephone: int, work_telephone: int):
         record = {
@@ -15,9 +31,10 @@ class Telebook:
         }
         self.id_record += 1
         self.records.append(record)
+        self.update_current_id()
 
-    def save_to_file(self, filename: str):
-        with open(filename, 'w') as file:
+    def save_to_file(self):
+        with open(self.filename, 'a') as file:
             for record in self.records:
                 file.write(f"id_record: {record['id_record']}\n")
                 file.write(f"Surname: {record['surname']}\n")
@@ -29,15 +46,9 @@ class Telebook:
                 file.write("\n")
 
     def return_book(self):
-        for record in self.records:
-            print(f"id_record: {record['id_record']}")
-            print(f"Surname: {record['surname']}")
-            print(f"Name: {record['name']}")
-            print(f"Father's Name: {record['father_name']}")
-            print(f"Corporation: {record['corporation']}")
-            print(f"Telephone: {record['telephone']}")
-            print(f"Work Telephone: {record['work_telephone']}")
-            print()
+        with open("telebook.txt", 'r') as file:
+            info_book = file.read()
+            print(info_book)
 
     def redact_record(self, id_record: int, **kwargs):
         found_record = None
@@ -51,7 +62,7 @@ class Telebook:
                 if key in found_record:
                     found_record[key] = value
 
-            self.save_to_file("telebook.txt")
+            self.save_to_file()
             print(f'Запись номер {id_record} отредактирована')
             print()
             return True
@@ -78,23 +89,21 @@ class Telebook:
             print()
 
 
+telebook = Telebook('telebook.txt')
 
-telebook = Telebook()
 telebook.add_record("Smith", "John", "Michael", "ABC Corp", 1234567890, 9876543210)
 telebook.add_record("Johnson", "Jane", "Robert", "XYZ Inc", 9876543210, 1234567890)
-telebook.add_record("Williams", "Sarah", "David", "LMN Ltd", 9871234560, 7894561230)
-telebook.add_record("Brown", "James", "William", "PQR Industries", 5551234567, 7779876543)
-telebook.add_record("Davis", "Emily", "Thomas", "DEF Group", 1112223333, 4445556666)
-telebook.add_record("Martinez", "Daniel", "Jose", "GHI Solutions", 8881112222, 3334445555)
-telebook.add_record("Miller", "Linda", "Susan", "JKL Enterprises", 6667778888, 2223334444)
-telebook.add_record("Jones", "Michael", "Christopher", "MNO Corporation", 3334445555, 8889990000)
-telebook.add_record("Garcia", "Maria", "Juan", "RST Inc", 4445556666, 7778889999)
-telebook.add_record("Lee", "Sarah", "Richard", "UVW Group", 9990001111, 1112223333)
+telebook.add_record("Williams", "Emily", "David", "LMN Group", 5555555555, 4444444444)
+telebook.add_record("Brown", "Olivia", "William", "PQR Industries", 1111111111, 2222222222)
+
+
+telebook.save_to_file()
+
 telebook.return_book()
-telebook.save_to_file("telebook.txt")
 
 telebook.redact_record(2, surname="Brown", corporation="PQR Industries")
 telebook.redact_record(15, name='Timur')
 
 telebook.find_record(name='q')
 telebook.find_record(name='Sarah')
+
